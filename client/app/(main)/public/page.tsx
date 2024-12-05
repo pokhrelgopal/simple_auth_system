@@ -1,6 +1,10 @@
 import Button from "@/components/Button";
 import React from "react";
+import type { Metadata } from "next";
 
+export const metadata: Metadata = {
+  title: "Public",
+};
 const PublicPage = () => {
   return (
     <div className="min-h-screen bg-gradient-to-b from-blue-100 to-white">

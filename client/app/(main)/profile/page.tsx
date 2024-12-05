@@ -6,10 +6,13 @@ import Link from "next/link";
 import Button from "@/components/Button";
 import { fetchUserProfile } from "@/utils/api";
 
+interface User {
+  username: string;
+  email: string;
+}
+
 export default function ProfilePage() {
-  const [user, setUser] = useState<{ username: string; email: string } | null>(
-    null
-  );
+  const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
