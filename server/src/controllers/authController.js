@@ -1,6 +1,6 @@
-const bcrypt = require("bcryptjs");
-const jwt = require("jsonwebtoken");
-const { PrismaClient } = require("@prisma/client");
+import { hash, compare } from "bcryptjs";
+import { sign } from "jsonwebtoken";
+import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
@@ -13,12 +13,11 @@ const signup = async (req, res) => {
         OR: [{ email }, { username }],
       },
     });
-    console.log("first");
     if (existingUser) {
       return res.status(400).json({ error: "User already exists" });
     }
 
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const hashedPassword = await hash(password, 10);
     await prisma.user.create({
       data: { username, email, password: hashedPassword },
     });
@@ -37,10 +36,10 @@ const login = async (req, res) => {
     const user = await prisma.user.findUnique({ where: { email } });
     if (!user) return res.status(400).json({ error: "Invalid credentials" });
 
-    const isMatch = await bcrypt.compare(password, user.password);
+    const isMatch = await compare(password, user.password);
     if (!isMatch) return res.status(400).json({ error: "Invalid credentials" });
 
-    const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET, {
+    const token = sign({ userId: user.id }, process.env.JWT_SECRET, {
       expiresIn: "1h",
     });
 
@@ -73,4 +72,4 @@ const logout = (req, res) => {
   res.json({ message: "Logged out successfully" });
 };
 
-module.exports = { signup, login, getMe, logout };
+export default { signup, login, getMe, logout };

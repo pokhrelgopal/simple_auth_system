@@ -1,5 +1,5 @@
-const jwt = require("jsonwebtoken");
-const { PrismaClient } = require("@prisma/client");
+import { verify } from "jsonwebtoken";
+import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
@@ -9,7 +9,7 @@ const authMiddleware = async (req, res, next) => {
   if (!token) return res.status(401).json({ error: "Not authenticated" });
 
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const decoded = verify(token, process.env.JWT_SECRET);
     const user = await prisma.user.findUnique({
       where: { id: decoded.userId },
       select: { id: true, username: true, email: true },
@@ -25,4 +25,4 @@ const authMiddleware = async (req, res, next) => {
   }
 };
 
-module.exports = authMiddleware;
+export default authMiddleware;
