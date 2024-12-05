@@ -19,8 +19,8 @@ This is a simple authentication system built with **Node.js** and **Express** on
 
 Ensure you have the following installed on your system:
 
-- **Node.js** (v16 or later)
-- **npm** (v7 or later)
+- **Node.js**
+- **npm**
 
 ## Getting Started
 
