@@ -1,11 +1,11 @@
-import express, { json } from "express";
-import cookieParser from "cookie-parser";
-import cors from "cors";
-import authRoutes from "./routes/authRoutes";
+const express = require("express");
+const cookieParser = require("cookie-parser");
+const cors = require("cors");
+const authRoutes = require("./routes/authRoutes");
 
 const app = express();
 
-app.use(json());
+app.use(express.json());
 app.use(cookieParser());
 app.use(
   cors({
@@ -16,4 +16,4 @@ app.use(
 
 app.use("/api/auth", authRoutes);
 
-export default app;
+module.exports = app;

@@ -1,28 +1,17 @@
-import { verify } from "jsonwebtoken";
-import { PrismaClient } from "@prisma/client";
+const jwt = require("jsonwebtoken");
 
-const prisma = new PrismaClient();
-
-const authMiddleware = async (req, res, next) => {
+const authenticate = (req, res, next) => {
   const token = req.cookies.token;
 
   if (!token) return res.status(401).json({ error: "Not authenticated" });
 
   try {
-    const decoded = verify(token, process.env.JWT_SECRET);
-    const user = await prisma.user.findUnique({
-      where: { id: decoded.userId },
-      select: { id: true, username: true, email: true },
-    });
-
-    if (!user) return res.status(404).json({ error: "User not found" });
-
-    req.user = user;
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    req.user = { id: decoded.userId };
     next();
   } catch (error) {
-    console.error("Auth middleware error:", error);
-    res.status(401).json({ error: "Not authenticated" });
+    return res.status(401).json({ error: "Invalid token" });
   }
 };
 
-export default authMiddleware;
+module.exports = authenticate;

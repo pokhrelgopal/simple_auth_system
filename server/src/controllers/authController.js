@@ -1,6 +1,6 @@
-import { hash, compare } from "bcryptjs";
-import { sign } from "jsonwebtoken";
-import { PrismaClient } from "@prisma/client";
+const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
+const { PrismaClient } = require("@prisma/client");
 
 const prisma = new PrismaClient();
 
@@ -13,11 +13,13 @@ const signup = async (req, res) => {
         OR: [{ email }, { username }],
       },
     });
+
     if (existingUser) {
       return res.status(400).json({ error: "User already exists" });
     }
 
-    const hashedPassword = await hash(password, 10);
+    const hashedPassword = await bcrypt.hash(password, 10);
+
     await prisma.user.create({
       data: { username, email, password: hashedPassword },
     });
@@ -36,10 +38,10 @@ const login = async (req, res) => {
     const user = await prisma.user.findUnique({ where: { email } });
     if (!user) return res.status(400).json({ error: "Invalid credentials" });
 
-    const isMatch = await compare(password, user.password);
+    const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) return res.status(400).json({ error: "Invalid credentials" });
 
-    const token = sign({ userId: user.id }, process.env.JWT_SECRET, {
+    const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET, {
       expiresIn: "1h",
     });
 
@@ -57,7 +59,16 @@ const login = async (req, res) => {
 
 const getMe = async (req, res) => {
   try {
-    const user = req.user;
+    const token = req.cookies.token;
+
+    if (!token) return res.status(401).json({ error: "Not authenticated" });
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const user = await prisma.user.findUnique({
+      where: { id: decoded.userId },
+      select: { id: true, username: true, email: true },
+    });
+
     if (!user) return res.status(404).json({ error: "User not found" });
 
     res.json(user);
@@ -72,4 +83,4 @@ const logout = (req, res) => {
   res.json({ message: "Logged out successfully" });
 };
 
-export default { signup, login, getMe, logout };
+module.exports = { signup, login, getMe, logout };
